@@ -7,7 +7,7 @@ This is a test project to demonstrate using Angular and PrimeNG.
 ### Clone the repo
 
 ```shell
-https://github.com/daniel-llano/SisFelClient.git
+git clone https://github.com/daniel-llano/SisFelClient.git
 cd SisFelClient
 ```
 
