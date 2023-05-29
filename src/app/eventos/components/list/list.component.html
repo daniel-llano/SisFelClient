@@ -1,0 +1,212 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <!--Agregar-->
+        <ng-template pTemplate="left">
+            <button 
+                pButton 
+                pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2"
+                (click)="modalAgregar()"
+            ></button>
+        </ng-template>
+
+        <!--FIltros-->
+        <ng-template pTemplate="right">
+
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value="true" label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarLista()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value="false" label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarLista()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaEventos"
+        [globalFilterFields]="['codigoevento','descripcion', 'codigorecepcionevento','fechahorainicioevento','activo']" 
+        responsiveLayout="scroll" 
+        [rowHover]="true" 
+        dataKey="id"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="max-width:10vw" class="center" pSortableColumn = "codigoevento">C&oacute;digo<p-sortIcon field="codigoevento"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "codigomotivoevento">C&oacute;digo<br>Motivo evento<p-sortIcon field="codigomotivoevento"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">C&oacute;digo<br>Recepci&oacute;n<br>Evento</th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "fechahorainicioevento">Fecha-Hora<br>Inicio Evento<p-sortIcon field="fechahorainicioevento"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">Estado</th>
+                <th style="max-width:10vw" class="center">Acciones</th>
+            </tr>
+        </ng-template>
+        
+        <!--Opciones-->
+        <ng-template pTemplate="body" let-evento>
+            <tr>
+                <td style="max-width:10vw" class="center">{{evento.codigoevento}}</td>
+                <td style="max-width:10vw" class="center">{{evento.codigomotivoevento}}</td>
+                <td style="max-width:10vw" class="center">{{evento.codigorecepcionevento}}</td>
+                <td style="max-width:10vw" class="center">{{evento.fechahorainicioevento}}</td>
+                <td style="max-width:10vw" class="center" *ngIf="evento.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td style="max-width:10vw" class="center" *ngIf="!evento.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+
+                <td style="max-width:10vw" class="center">
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" 
+                        class="p-button-rounded p-button-success mr-2"
+                        pTooltip="Editar" tooltipPosition="top"
+                        (click)="modalEditar(evento)"
+                    ></button>
+                    <!--<button
+                        *ngIf="!evento.activo"
+                        pButton pRipple icon="pi pi-refresh" 
+                        class="p-button-rounded p-button-warning"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                        (click)="modalHabilitar(evento)"
+                    ></button>-->
+                    <button
+                        *ngIf="evento.activo"
+                        pButton pRipple icon="pi pi-stop"
+                        class="p-button-rounded p-button-rounded"
+                        pTooltip="Detener" tooltipPosition="top"
+                        (click)="modalDetener(evento)"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} eventos.
+            </div>
+        </ng-template>
+
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} eventos"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+<!--Modal-->
+<p-dialog 
+    [(visible)]="modal" 
+    [style]="{width: '550px'}" 
+    header="Detalle de Eventos Significativos" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field"style="margin: 10px 0">
+            <label for="motivoEvento">Motivo de evento:</label>
+            <p-dropdown 
+                [(ngModel)]="evento.codigomotivoevento"  
+                inputId="motivoEvento" 
+                [options]="listaMotivoEvento" 
+                optionLabel="nombreparametro" 
+                optionValue="codigoparametro"
+                placeholder="Seleccione el motivo del evento"
+                [filter]="true" 
+                filterBy="nombreparametro"
+                [virtualScroll] = true
+                [virtualScrollItemSize] = 45
+                
+            >
+                <ng-template let-option pTemplate="item" >
+                    <span style="font-size: x-small;">{{option.codigoparametro}}: {{option.nombreparametro}}</span>
+                </ng-template>
+            </p-dropdown>
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="fechahorainicioevento">Fecha Inicio:</label>
+            <p-calendar [(ngModel)]="evento.fechahorainicioevento" 
+                        [showIcon]="true" 
+                        inputId="icon"
+            ></p-calendar>
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="cufd">CUFD:</label>
+            <input 
+                type="text" 
+                pInputText id="cufd"
+                [(ngModel)]="evento.cufd"
+            />
+        </div>
+        
+        <div class="field" style="margin: 10px 0">
+            <label for="cufdevento">CUFD del Evento:</label>
+            <input 
+                type="text" 
+                pInputText id="cufdevento"
+                [(ngModel)]="evento.cufdevento"
+            />
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="nombre">CAFC Compra-Venta:</label>
+            <input
+                type="text" 
+                pInputText id="cafccompraventa"
+                [(ngModel)]="evento.cafccompraventa" 
+            />
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="nombre">CAFC Telecomunicaciones:</label>
+            <input 
+                type="text" 
+                pInputText id="cafctelecom"
+                [(ngModel)]="evento.cafctelecom" 
+            />
+        </div>
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        
+        <button 
+            pButton pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text"
+            (click)="ocultarModal()"
+        ></button>
+        
+        <button 
+            pButton pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text"
+            (click)="guardarDatos()"
+        ></button>
+
+    </ng-template>
+</p-dialog>
+
+<p-toast position="top-right"></p-toast> 
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+

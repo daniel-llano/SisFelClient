@@ -1,0 +1,221 @@
+<div class="card" style="margin: 30px auto ;width: 80vw;">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div style="margin-left: 10px;">
+                <p-radioButton name="filtro" value="1" label="Válidas" [(ngModel)]="filtro" (onClick)="cargarLista()"></p-radioButton>    
+            </div>
+            <div style="margin-left: 10px;">
+                <p-radioButton name="filtro" value="2" label="Observadas" [(ngModel)]="filtro" (onClick)="cargarLista()"></p-radioButton>
+            </div>
+            <div style="margin-left: 10px;">
+                <p-radioButton name="filtro" value="3" label="En Proceso" [(ngModel)]="filtro" (onClick)="cargarLista()"></p-radioButton>
+            </div>
+            <div style="margin-left: 10px; margin-right: 75px;">
+                <p-radioButton name="filtro" value="4" label="Rechazada" [(ngModel)]="filtro" (onClick)="cargarLista()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text" 
+                    placeholder="Buscar..." 
+                />
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt [value]="listaMasiva" [rows]="10" [paginator]="true"  
+    [globalFilterFields]="['fechaInicio','estado','fechaFin','codigoRecepcion']" 
+    responsiveLayout="scroll"
+    [rowHover]="true" 
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+    [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" pSortableColumn="fechainicio">Fecha Inicio<p-sortIcon field="fechainicio"></p-sortIcon></th>
+                <th class="center" >Enviadas</th>
+                <th class="center" >Inicio</th>
+                <th class="center" >Fin</th>
+                <th class="center" pSortableColumn="fechafin">Fecha Fin<p-sortIcon field="fechafin"></p-sortIcon></th>
+                <th class="center" pSortableColumn="codigorecepcion">Recepción<p-sortIcon field="codigorecepcion"></p-sortIcon></th>
+                <th class="center" pSortableColumn="estado">Estado<p-sortIcon field="estado"></p-sortIcon></th>
+                <th class="center">Observaciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-obj>
+            <tr>
+                
+                <td style="width: 15vw"class="center">{{obj.fechainicio | date:'dd-MM-yyyy hh:mm a'}}</td>
+
+                <td style="width: 7vw" class="center">{{obj.numerofacturasenviadas }}</td>
+                
+                <td style="width: 7vw"class="center">{{obj.numerofacturainicio}}</td>
+                
+                <td style="width: 7vw" class="center">{{obj.numerofacturafin}}</td>
+
+                <td style="width: 15vw" class="center">{{obj.fechafin | date:'dd-MM-yyyy hh:mm a'}}</td>
+
+                <td style="width: 20vw" class="center">{{obj.codigorecepcion}}</td>
+
+                <td style="width: 15vw" class="center" *ngIf="obj.estado===1"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">VALIDADA</span></td>
+                <td style="width: 15vw" class="center" *ngIf="obj.estado===2"><span style="background-color: #fef1cc; color: #c8873d; padding: 3%; border-radius: 5%; font-weight: 600;">OBSERVADA</span></td>
+                <td style="width: 15vw" class="center" *ngIf="obj.estado===3"><span style="background-color: #9896a7; color: #4c25da; padding: 3%; border-radius: 5%; font-weight: 600;">PROCESANDO</span></td>
+                <td style="width: 15vw" class="center" *ngIf="obj.estado===4"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">RECHAZADA</span></td>
+
+                <td style="width: 7vw" class="center">
+                    <button pButton pRipple type="button" icon="pi pi-info" class="p-button-rounded p-button-warning" (click)="validacionRecepcionMasiva(obj)" pTooltip="Ver lista de observaciones" tooltipPosition="top"></button>
+                </td>
+            </tr>
+        </ng-template>
+        
+        
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaMasiva ? listaMasiva.length : 0 }} emisiones masivas.
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+
+<!--Modal-->
+
+<p-dialog 
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Carga De los Archivos" 
+    [modal]="true" 
+    styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <h3>Cabecera :</h3>
+                <div class="col-12 md:col-4">
+                    <div class="p-inputgroup">
+                        <input type="file" pInputText placeholder="Keyword" accept=".txt" (change)="onChangeCabecera($event)" >         
+                    </div>
+                </div>
+        <small class="p-error" *ngIf="mostrar && !txtCabecera">Por favor seleccione un Archivo para carga de la Cabecera</small>
+        <h3>Detalle :</h3>
+                <div class="col-12 md:col-4">
+                    <div class="p-inputgroup">
+                        <input type="file" pInputText placeholder="Keyword" accept=".txt" (change)="onChangeDetalle($event)" >         
+                    </div>
+                </div>
+        <small class="p-error" *ngIf="mostrar && !txtDetalle">Por favor seleccione un Archivo para la carga del Detalle</small>
+        
+        <br>
+        <p-progressBar mode="indeterminate" [style]="{'height': '6px'}" *ngIf="progreso"></p-progressBar>
+        <div class="grid" *ngIf="errores">
+            <div class="col-12 md:col-4">
+                <p-scrollPanel [style]="{width: '100%', height: '200px'}">
+                    <p style="color:#4c25da">
+                        {{desErrores}}
+                    </p>
+                </p-scrollPanel>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-raised p-button-text" 
+            (click)="ocultarModal()"
+            *ngIf="!progreso && !mostrarSalir"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Cargar" 
+            icon="pi pi-upload" 
+            class="p-button-raised p-button-text" 
+            (click)="cargarDatos(txtCabecera,txtDetalle)"
+            *ngIf="cargaDetalle && txtDetalle!=null && cargaCabecera && txtCabecera!=null && !progreso && !mostrarSalir"
+        ></button>
+    <button 
+        pButton 
+        pRipple 
+        label="Enviar" 
+        icon="pi pi-check" 
+        class="p-button-raised p-button-text" 
+        (click)="validacion(nombreCabecera,nombreDetalle)"
+        *ngIf="cargadoCabecera && cargadoDetalle &&  txtDetalle!=null  && txtCabecera!=null && !mostrarSalir && !progreso"
+    ></button>
+    <button 
+        pButton 
+        pRipple 
+        label="Salir" 
+        icon="pi pi-times" 
+        class="p-button-raised p-button-text" 
+        (click)="salir()"
+        *ngIf="mostrarSalir"
+    ></button>
+   
+    </ng-template>
+</p-dialog>
+
+<!--Modal Validar Recepcion Masiva-->
+<p-dialog 
+[(visible)]="ventanaModalValidacionRecepcion" 
+[style]="{width: '70vw'}" 
+header="Observaciones Emisión Masiva"
+[modal]="true" 
+(onHide)="ocultarModalValidacionRecepcion()"
+styleClass="p-fluid">
+
+    <p-toolbar styleClass="mb-4">
+        <div style="width: 100%; text-align: center;" >
+            <h4 class="center" *ngIf="estadoRespuestaRecepcionMasiva==='VALIDADA'"><span style="background-color: #c9e7c9; color: #38703c; ">ESTADO: VALIDADA</span></h4>
+            <h4 class="center" *ngIf="estadoRespuestaRecepcionMasiva==='OBSERVADA'"><span style="background-color: #fef1cc; color: #c8873d; ">ESTADO: OBSERVADA</span></h4>
+            <h4 class="center" *ngIf="estadoRespuestaRecepcionMasiva==='PROCESANDO'"><span style="background-color: #9896a7; color: #4c25da; ">ESTADO: PROCESANDO</span></h4>
+            <h4 class="center" *ngIf="estadoRespuestaRecepcionMasiva==='RECHAZADA'"><span style="background-color: #feccd2; color: #c83d49; ">ESTADO: RECHAZADA</span></h4>
+        </div>
+    </p-toolbar>
+
+    <p-table
+    [value]="listaMensajeErrorRespuestaRecepcionMasiva" 
+    [rows]="7" [paginator]="true" [rowHover]="true" dataKey="id" 
+    responsiveLayout="scroll" currentPageReportTemplate="Mostrando {first} hasta el {last} de {totalRecords} entradas" 
+    [showCurrentPageReport]="true">
+​
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" >Nro Archivo</th>
+                <th class="center" >Nro Detalle </th>
+                <th class="center" >Descripción</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-error>
+            <tr>
+                <td class="center">{{error.numeroArchivo}}</td>
+                <td class="center">{{error.numeroDetalle}}</td>
+                <td class="center">{{error.descripcion}}</td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaMensajeErrorRespuestaRecepcionMasiva ? listaMensajeErrorRespuestaRecepcionMasiva.length : 0 }} observaciones.
+            </div>
+        </ng-template>
+    </p-table>
+</p-dialog>
+   
+<p-toast position="top-right"></p-toast>

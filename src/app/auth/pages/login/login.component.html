@@ -1,0 +1,31 @@
+<div class="content">
+    <div class="Formulario">
+
+        <div class="titulo">
+            <label for="">Iniciar Sesión</label>
+        </div>
+        
+        <div class="formulario">
+            <form action="">
+
+                <label class="label" >Usuario:</label>
+                <input type="text" pInputText [(ngModel)]="login.Usuario" name="usuario" id="usuario">
+
+                <label class="label">Clave:</label>
+                <div class="input">
+                    <p-password class="input" id="clave" name="clave" [(ngModel)]="login.Clave" [feedback]="false" [toggleMask]="true"></p-password>
+                </div>
+                
+
+                <div class="boton">
+                <button pButton pRipple type="submit" label="Ingresar" class="p-button-success" (click)="loginUser()"></button>
+                </div>
+                
+
+                
+            </form>
+        </div>
+
+    </div>
+</div>
+<p-toast position="top-right"></p-toast> 

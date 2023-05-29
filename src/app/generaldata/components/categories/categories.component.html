@@ -1,0 +1,64 @@
+
+<div class="card" style="margin: 30px auto;">
+
+    <p-toolbar styleClass="mb-4">
+
+        <ng-template pTemplate="left">
+            <h4>LISTA DE CATEGORIAS ESTABLECIDA POR EL SISTEMA DE IMPUESTOS NACIONALES</h4>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                
+                <input 
+                    pInputText 
+                    type="text" 
+                    (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                    placeholder="Buscar..." 
+                />
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaCategorias" 
+        [rows]="10" 
+        [paginator]="true"  
+        [globalFilterFields]="['codigoactividad','codigoproductosin','descripcionproducto']" 
+        responsiveLayout="scroll"
+        scrollHeight="50vh"
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+        [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="codigo center">Código Actividad</th>
+                <th class="codigo center">Código Producto</th>
+                <th class="descripcion center">Descripción Producto</th>
+            </tr>
+        </ng-template>
+
+        
+        <ng-template pTemplate="body" let-categoria>
+            <tr>
+                
+                <td class="codigo center">{{categoria.codigoactividad}}</td>
+
+                <td class="codigo center">{{categoria.codigoproductosin}}</td>
+
+                <td class="descripcion center">{{categoria.descripcionproducto}}</td>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaCategorias ? listaCategorias.length : 0 }} categorias.
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+

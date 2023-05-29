@@ -1,0 +1,7 @@
+.content{
+    position: fixed;
+    bottom:20px;
+    height: 40px;
+    width: 100%;
+    text-align: center;
+}

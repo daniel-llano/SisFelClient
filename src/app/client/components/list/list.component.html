@@ -1,0 +1,386 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstadoCliente" value=true label="Habilitados" [(ngModel)]="filtroEstadoCliente" (onClick)="cargarListaClientes()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstadoCliente" value=false label="Deshabilitados" [(ngModel)]="filtroEstadoCliente" (onClick)="cargarListaClientes()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+    
+    <p-table #dt [value]="listaClientes"
+        [globalFilterFields]="['codigocliente','ci','datoscliente','tipopersona']" 
+        responsiveLayout="scroll" 
+        [rowHover]="true" 
+        dataKey="id"
+        >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" style="width: 10vw" pSortableColumn = "codigocliente">Código Cliente<p-sortIcon field="codigocliente"></p-sortIcon></th>
+                <th class="center" style="width: 15vw">Nro. Documento</th>
+                <th class="center" style="width: 25vw">Datos</th>
+                <th class="center" style="width: 5vw">Tipo de Persona</th>
+                <th class="center" style="width: 10vw">Estado</th>
+                <th class="center" style="width: 10vw">Teléfonos</th>
+                <th class="center" style="width: 10vw" >Acciones</th>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-cliente>
+            <tr>
+                <td class="center">{{cliente.codigocliente}}</td>
+                <td class="center">{{cliente.ci}}</td>
+                <td class="center">{{cliente.datoscliente | uppercase}}</td>
+                <td class="center">{{cliente.tipopersona | uppercase}}</td>               
+                <td class="center" *ngIf="cliente.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td class="center" *ngIf="!cliente.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+                
+                <td class="center" >
+                    <button 
+                        pButton pRipple icon="pi pi-plus" class="p-button-rounded p-button-success" 
+                        (click)="abrirModalNuevoDatoTelefono(cliente)"
+                        pTooltip="Agregar teléfono" tooltipPosition="top"
+                    ></button>
+                    <button 
+                        pButton pRipple icon="pi pi-phone" class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalListaTelefonos(cliente)"
+                        pTooltip="Ver lista teléfonos" tooltipPosition="top"
+                    ></button>
+                </td>
+
+                <td class="center">                    
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" 
+                        (click)="abriModalEditarDato(cliente)"
+                        pTooltip="Editar" tooltipPosition="top"
+                    ></button>
+
+                    <button 
+                        *ngIf="!cliente.activo"
+                        pButton pRipple icon="pi pi-refresh" class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalHabilitarDato(cliente)"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                    ></button>                
+
+                    <button 
+                        *ngIf="cliente.activo"
+                        pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalEliminarDato(cliente)"
+                        pTooltip="Deshabilitar" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} clientes.
+            </div>
+        </ng-template>
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} clientes"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+<!--Modal Cliente-->
+<p-dialog 
+    id="cliente"
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Detalle Cliente" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field">
+            <label for="codigocliente">Código Cliente:</label>
+            <input 
+                type="text" 
+                pInputText id="codigocliente"
+                [(ngModel)]="cliente.codigocliente" 
+                [readOnly]="!puedeEditarId"
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarCodigoCliente(cliente.codigocliente)">Por favor verifique el código del cliente.</small>
+        </div>
+
+        <div class="field">
+            <label for="ci">C.I.:</label>
+            <input 
+                type="text" 
+                pInputText id="ci"
+                [(ngModel)]="cliente.ci" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarCi(cliente.ci)">Por favor verifique el C.I. del cliente.</small>
+        </div>
+
+        <div class="field" >
+            <label for="datoscliente">Apellidos, Nombres:</label>
+            <input 
+                type="text" 
+                pInputText id="datoscliente" 
+                [(ngModel)]="cliente.datoscliente" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarDatosCliente()">Por favor verifique los datos del cliente.</small>
+        </div>
+
+        <div class="field" >
+            <label for="nit_ci">Seleccione el tipo de persona:</label> <br>
+            <div style="width: 40%; display: grid; grid-template-columns: 50% 50%;">
+                <p-radioButton name="tipopersona" value='N' label="Natural" [(ngModel)]="cliente.tipopersona"></p-radioButton>
+                <p-radioButton name="tipopersona" value='J' label="Jurídica" [(ngModel)]="cliente.tipopersona"></p-radioButton>
+            </div>
+            <small class="p-error" *ngIf="intentoGuardar && !validarTipoPersona()">Por favor seleccione un tipo de persona.</small>
+        </div>
+    
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModal()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+    </ng-template>
+
+</p-dialog>
+
+<!--Modal Telefono-->
+<p-dialog 
+    id="telefonoCliente"    
+    [(visible)]="ventanaModalTelefono" 
+    [style]="{width: '550px'}" 
+    header="Detalle Teléfono" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field">
+            <label for="codigotelefonocliente">Código Linea Cliente:</label>
+            <input 
+                type="text" 
+                pInputText id="codigotelefonocliente"
+                [(ngModel)]="telefonocliente.codigotelefonocliente" 
+                [readOnly]="!puedeEditarIdTelefono"
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && !validarCodigoTelefonoCliente()">Por favor verifique el código de la linea del cliente.</small>
+        </div>
+
+        <div class="field">
+            <label for="telefono">Teléfono:</label>
+            <input 
+                type="text" 
+                pInputText id="telefono"
+                [(ngModel)]="telefonocliente.telefono" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && !validarTelefono()">Por favor verifique el número de teléfono del cliente.</small>
+        </div>
+
+        <div class="field" >
+            <label for="nit_ci">Seleccione el tipo de documento:</label> <br>
+            <div style="width: 40%; display: grid; grid-template-columns: 50% 50%;">
+                <p-radioButton name="tipoDocumento" value='5' label="NIT" [(ngModel)]="telefonocliente.codigotipodocumentoidentidad"></p-radioButton>
+                <p-radioButton name="tipoDocumento" value='1' label="CI" [(ngModel)]="telefonocliente.codigotipodocumentoidentidad"></p-radioButton>
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="nit">NIT:</label>
+            <input 
+                type="text" 
+                pInputText id="nit"
+                [(ngModel)]="telefonocliente.nit" 
+                [readOnly]="telefonocliente.codigotipodocumentoidentidad == 1"
+                [ngClass]="{'deshabilitado': telefonocliente.codigotipodocumentoidentidad == 1}"
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && telefonocliente.codigotipodocumentoidentidad == 5 && (!validarNit || !nitValido)">Por favor verifique el NIT del cliente.</small>
+        </div>
+
+        <p-messages severity="info" *ngIf="telefonocliente.codigotipodocumentoidentidad == 1">
+            <ng-template pTemplate>
+                <div  class="ml-2">El número de NIT no es obligatorio.</div>
+            </ng-template>
+        </p-messages>
+
+        <div class="field">
+            <label for="ci">C.I.:</label>
+            <input 
+                type="text" 
+                pInputText id="ci"
+                [(ngModel)]="telefonocliente.ci" 
+                [readOnly]="telefonocliente.codigotipodocumentoidentidad == 5"
+                [ngClass]="{'deshabilitado': telefonocliente.codigotipodocumentoidentidad == 5}"
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && telefonocliente.codigotipodocumentoidentidad == 1 && !validarCi(telefonocliente.ci)">Por favor verifique el C.I. del cliente.</small>
+        </div>
+
+        <div class="field">
+            <label for="complemento">Complemento:</label>
+            <input 
+                type="text" 
+                pInputText id="complemento"
+                [(ngModel)]="telefonocliente.complemento" 
+                [readOnly]="telefonocliente.codigotipodocumentoidentidad == 5"
+                [ngClass]="{'deshabilitado': telefonocliente.codigotipodocumentoidentidad == 5}"
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && telefonocliente.codigotipodocumentoidentidad == 1 && !validarComplemento(telefonocliente.complemento)">Por favor verifique el complemento del C.I. del cliente.</small>
+        </div>
+
+        <p-messages severity="info" *ngIf="telefonocliente.codigotipodocumentoidentidad == 5">
+            <ng-template pTemplate>
+                <div  class="ml-2">El número de CI y el complemento no es obligatorio.</div>
+            </ng-template>
+        </p-messages>
+
+        <div class="field">
+            <label for="razonsocial">Razón Social:</label>
+            <input 
+                type="text" 
+                pInputText id="razonsocial"
+                [(ngModel)]="telefonocliente.razonsocial" 
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && !validarRazonSocial()">Por favor verifique la razón social del cliente.</small>
+        </div>
+
+        <div class="field" >
+            <label for="email">Correo Electrónico:</label>
+            <input 
+                type="email" 
+                pInputText id="email" 
+                [(ngModel)]="telefonocliente.email" 
+            />
+            <small class="p-error" *ngIf="intentoGuardarTelefono && !validarEmail()">Por favor verifique el correo electrónico del cliente.</small>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalTelefono()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatosTelefono()"
+        ></button>
+    </ng-template>
+
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-toast position="top-right"></p-toast> 
+
+<!--Modal Lista Telefonos-->
+<p-dialog
+    id="listaTelefonosCliente"    
+    [(visible)]="ventanaModalListaTelefonos" 
+    [style]="{width: '60vw'}" 
+    header="Lista Teléfonos Cliente: {{cliente.datoscliente | uppercase}} "
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <p-table #dt [value]="cliente.telefonoclientes" [rows]="10" [paginator]="true"  
+        responsiveLayout="scroll"
+        [rowHover]="true" 
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+        [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center">Teléfono</th>
+                <th class="center">N° de Documento</th>
+                <th class="center">Razón Social</th>
+                <th class="center">Correo Electrónico</th>
+                <th class="center">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-telefonocliente>
+            <tr>
+                <td class="center">{{telefonocliente.telefono}}</td>
+
+                <td *ngIf="telefonocliente.codigotipodocumentoidentidad == 5" class="center">{{telefonocliente.nit}}</td>
+                <td *ngIf="telefonocliente.codigotipodocumentoidentidad == 1" class="center">{{ telefonocliente.ci}}</td>
+
+                <td class="center">{{telefonocliente.razonsocial | uppercase}}</td>
+
+                <td class="center" *ngIf="telefonocliente.email != ''">{{telefonocliente.email}}</td>
+                <td class="center" *ngIf="telefonocliente.email == ''">Solicitar</td>   
+
+                <td class="center" >
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success" 
+                        (click)="abrirModalEditarDatoTelefono(telefonocliente)"
+                        pTooltip="Editar teléfono" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{cliente.telefonoclientes ? cliente.telefonoclientes.length : 0 }} teléfonos.
+            </div>
+        </ng-template>
+
+    </p-table>
+<p-dialog>

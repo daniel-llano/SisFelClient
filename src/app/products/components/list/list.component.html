@@ -1,0 +1,263 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=true label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarListaProductos()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=false label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarListaProductos()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..."
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaProductos"
+        [globalFilterFields]="['codigoproducto','nombreproducto',
+        'codigocategoriaNavigation.codigoproductosin',
+        'codigocategoriaNavigation.descripcionproducto']" 
+        responsiveLayout="scroll"
+        [rowHover]="true" 
+        dataKey="id"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="max-width:10vw" class="center" pSortableColumn="codigoproducto">C&oacute;digo<p-sortIcon field="codigoproducto"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn="nombreproducto">Nombre<p-sortIcon field="nombre"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn="precio">Precio<p-sortIcon field="precio"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" >C&oacute;digo SIN</th>
+                <th style="max-width:10vw" class="center" >Categor&iacute;a</th>
+                <th style="max-width:10vw" class="center" >Estado</th>
+                <th style="max-width:10vw" class="center" >Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-producto>
+            <tr>
+                
+                <td class="center">{{producto.codigoproducto}}</td>
+                <td class="center">{{producto.nombreproducto | uppercase}}</td>
+                <td class="center">{{producto.precio |number:'.2' }}</td>
+                <td class="center">{{producto.codigocategoriaNavigation.codigoproductosin}}</td>
+                <td style="width: 30%" class="center">{{producto.codigocategoriaNavigation.descripcionproducto}}</td>
+                
+                <td class="center" *ngIf="producto.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td class="center" *ngIf="!producto.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+                
+                <td class="center">
+                    <button 
+                        *ngIf="!producto.activo"
+                        pButton pRipple icon="pi pi-refresh" class="p-button-rounded p-button-primary" 
+                        (click)="abrirModalHabilitarDato(producto)"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                    ></button>
+
+                    <button
+                        pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" 
+                        (click)="abriModalEditarDato(producto)"
+                        pTooltip="Editar" tooltipPosition="top"
+                    ></button>
+                    
+                    <button 
+                        *ngIf="producto.activo"
+                        pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalEliminarDato(producto)"
+                        pTooltip="Deshabilitar" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} productos.
+            </div>
+        </ng-template>
+
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} productos"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+<!--Modal-->
+<p-dialog 
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Detalle Producto" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field">
+            <label for="tipo">Tipo:</label>
+            <p-dropdown 
+                [(ngModel)]="producto.tipoproducto" 
+                inputId="tipo" 
+                [options]="listaTipos" 
+                optionLabel="descripcion"
+                optionValue="tipoproducto"
+                placeholder="Seleccione el tipo de producto"
+                (onChange)="actualizarListaActividades($event)"
+            >
+                <ng-template let-option pTemplate="item">
+                    <span>{{option.descripcion}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="intentoGuardar && !validarTipoProducto()">Por favor seleccione el tipo de producto.</small>
+        </div>
+
+        <div class="field">
+            <label for="actividad">Actividad:</label>
+            <p-dropdown 
+                [(ngModel)]="producto.codigocategoriaNavigation.codigoactividad" 
+                inputId="actividad" 
+                [options]="listaActividadesFiltrada" 
+                optionLabel="descripcion" 
+                optionValue="codigoCaeb"
+                placeholder="Seleccione la actividad del producto"
+                [virtualScroll] = true
+                [virtualScrollItemSize] = 1
+                (onChange)="actualizarListaCategorias($event)"
+            >
+                <ng-template let-option pTemplate="item">
+                        <span>{{option.descripcion}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="intentoGuardar && !validarActividad()">Por favor seleccione la actividad de producto.</small>
+        </div>
+
+        <div class="field" >
+            <label for="categoria">Categoría:</label>
+            <p-dropdown 
+                [(ngModel)]="producto.codigocategoria" 
+                inputId="categoria" 
+                [options]="listaCategoriasFiltrada" 
+                optionLabel="descripcionproducto"
+                optionValue="codigocategoria"
+                placeholder="Seleccione la categoría del producto"
+                [virtualScroll] = true
+                [virtualScrollItemSize] = 45
+                [filter]="true" 
+                filterBy="descripcionproducto"
+            >
+                <ng-template let-option pTemplate="item">
+                    <span >{{option.descripcionproducto}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="intentoGuardar && !validarCategoria() ">Por favor seleccione la categoría de producto.</small>
+        </div>
+
+        <div class="field"style="margin: 10px 0">
+            <label for="unidadMedida">Unidad de Medida:</label>
+            <p-dropdown 
+                [(ngModel)]="producto.codigounidadmedida" 
+                inputId="unidadMedida" 
+                [options]="listaUnidadesMedida" 
+                optionLabel="nombreparametro" 
+                optionValue="codigoparametro"
+                placeholder="Seleccione la unidad de medida del producto"
+                [filter]="true" 
+                filterBy="nombreparametro"
+            >
+                <ng-template let-option pTemplate="item">
+                    <span>{{option.nombreparametro}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="intentoGuardar && !validarUnidadMedida()">Por favor seleccione la unidad de medida del producto.</small>
+        </div>
+
+        <div class="field" >
+            <label for="codigo">Código:</label>
+            <input 
+                type="text" 
+                pInputText id="codigo"
+                [(ngModel)]="producto.codigoproducto" 
+                [ngClass]="{'deshabilitado': !puedeEditarId}"
+                [readOnly]="!puedeEditarId"
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarCodigoProducto()">Por favor verifique el código del producto.</small>
+        </div>
+
+        <p-messages severity="info" *ngIf="!puedeEditarId">
+            <ng-template pTemplate>
+                <div  class="ml-2">No se puede editar el código del producto.</div>
+            </ng-template>
+        </p-messages>
+
+
+        <div class="field" >
+            <label for="nombre">Nombre:</label>
+            <input 
+                type="text" 
+                pInputText id="nombre" 
+                [(ngModel)]="producto.nombreproducto" 
+                required
+                
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarNombre()">Por favor verifique el nombre del producto.</small>
+        </div>
+
+
+        <div class="field" >
+            <label for="precio">Precio: (Bs)</label>
+            <p-inputNumber name="precio" [(ngModel)]="producto.precio" 
+                minValue="1" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                [useGrouping]="false" class="subtotal" ></p-inputNumber>
+            <small class="p-error" *ngIf="(intentoGuardar && !producto.precio)">Por favor verifique el precio del producto.</small>
+            <small class="p-error" *ngIf="intentoGuardar && !validarPrecio(producto.precio)"> El atributo precio debe ser un numero mayor a 0.00</small>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModal()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-toast position="top-right"></p-toast> 

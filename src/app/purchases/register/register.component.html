@@ -1,0 +1,293 @@
+<div class="content">
+    <table id="tablaCabecera">
+        <tr class="th" id="titulo">
+            <th colspan="2">DATOS DE COMPRA</th>
+        </tr>
+        <tr class="th">
+            <td> 
+                <label for="tipoCompra">Tipo de Compra:</label> 
+            </td>
+            <td>
+               <label for="fechaEmision">Fecha Emisión:</label>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="width:50%">
+                <p-dropdown 
+                    [(ngModel)]="compra.tipocompra" 
+                    inputId="tipoCompra" 
+                    [options]="listaTiposCompra" 
+                    optionLabel="descripcion"
+                    optionValue="codigo"
+                    placeholder="Seleccione el tipo de compra"
+                >
+                    <ng-template let-option pTemplate="item">
+                        <span>{{option.descripcion}}</span>
+                    </ng-template>
+                </p-dropdown><br>
+                
+                <small class="p-error" *ngIf="intentoGuardar && !validarTipoCompra()">Por favor seleccione el tipo de compra.</small>
+            </td>
+
+            <td style="width:50%">
+                <p-calendar [(ngModel)]="compra.fechaemision" [showIcon]="true" inputId="fechaEmision"></p-calendar> <br>  
+                <small class="p-error" *ngIf="intentoGuardar && !validarFechaEmision()">Por favor verifique la fecha emisión.</small>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr class="th">
+            <td>
+                <label for="nitEmisor">Nit Emisor:</label> 
+            </td>
+            <td>
+                <label for="razonSocial">Razón Social Emisor:</label> 
+            </td>
+            <td>
+                <label for="codigoAutorizacion">Código Autorización:</label> 
+            </td>
+            <td>
+                <label for="numeroFactura">Nro. Factura:</label>
+            </td>
+            <td>
+                <label for="numeroDuiDim">Nro. DuiDim:</label>
+            </td>
+        </tr> 
+
+        <tr>
+            <td>
+                <input type="number" pInputText id="nitEmisor" [(ngModel)]="compra.nitemisor"/> <br>
+                <small class="p-error" *ngIf="intentoGuardar && (!validarNit() || !nitValido)">Por favor verifique el NIT del emisor.</small>
+            </td>
+
+            <td>
+                <input type="text" pInputText id="razonSocial" [(ngModel)]="compra.razonsocialemisor"/><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarRazonSocial()">Por favor verifique la razón social del emisor.</small>
+            </td>
+
+            <td>
+                <input type="text" pInputText id="codigoAutorizacion" [(ngModel)]="compra.codigoautorizacion"/><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarCodigoAutorizacion()">Por favor verifique el código de autorización.</small>
+            </td>
+
+            <td>
+                <input type="number" pInputText id="numeroFactura" [(ngModel)]="compra.numerofactura"/> <br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarNroFactura()">Por favor verifique el número de factura.</small>
+            </td>
+            
+            <td>
+                <input type="text" pInputText id="numeroDuiDim" [(ngModel)]="compra.numeroduidim"/><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarNumeroDuiDim()">Por favor verifique el número DuiDim.</small>
+            </td>
+        </tr>
+
+        <tr class="th">
+            <td>
+                <label for="montoTotalCompra">Monto Total Compra:</label>
+            </td>
+            <td>
+                <label for="importeICE">Importe ICE:</label>
+            </td>
+            <td>
+                <label for="importeEHD">Importe IEHD:</label>
+            </td>
+            <td>
+                <label for="importeLPJ">Importe IPJ:</label>
+            </td>
+            <td>
+                <label for="importesExentos">Importes Exentos:</label>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <p-inputNumber inputId="montoTotalCompra" [(ngModel)]="compra.montototalcompra" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"
+                (ngModelChange)="calcularSubTotal()" ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarMontoTotalCompra()">Por favor verifique el monto total.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="importeICE" [(ngModel)]="compra.importeice" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()" ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImporteICE()">Por favor verifique el importe ICE.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="importeEHD" [(ngModel)]="compra.importeiehd" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()" ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImporteEHD()">Por favor verifique el importe EHD.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="importeLPJ" [(ngModel)]="compra.importeipj" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()" ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImporteLPJ()">Por favor verifique el importe LPJ.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="importesExentos" [(ngModel)]="compra.importesexentos" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()" ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImportesExentos()">Por favor verifique los importes exentos.</small>
+            </td>
+        </tr>
+
+        <tr class="th">
+            <td>
+                <label for="descuento">Descuento:</label>
+            </td>
+            <td>
+                <label for="montoGiftCard">Monto Gift Card:</label>
+            </td>
+            <td>
+                <label for="tasas">Tasas:</label>
+            </td>
+            <td>
+                <label for="otroNoSujetoCredito">Otro No Sujeto Crédito Fiscal:</label>
+            </td>
+            <td>
+                <label for="importeTasaCero">Importe Tasa Cero:</label>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <p-inputNumber inputId="descuento" [(ngModel)]="compra.descuento" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularCreditoFiscal()"
+                ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarDescuento()">Por favor verifique el descuento.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="montoGiftCard" [(ngModel)]="compra.montogiftcard" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularCreditoFiscal()"
+                ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImportesExentos()">Por favor verifique el monto gift card.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="tasas" [(ngModel)]="compra.tasas" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()"></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarTasas()">Por favor verifique las tasas.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="otroNoSujetoCredito" [(ngModel)]="compra.otronosujetocredito" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()"></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarOtroNoSujetoCredito()">Por favor verifique el valor registrado.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="importeTasaCero" [(ngModel)]="compra.importetasacero" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" 
+                (ngModelChange)="calcularSubTotal()"></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarImporteTasaCero()">Por favor verifique el importe tasa cero.</small>
+            </td>
+        </tr>
+
+        <tr class="th">
+            <td>
+                <label for="codigoControl">Código Control:</label> 
+            </td>
+            <th>
+                <label for="subTotal">Subtotal:</label>    
+            </th>
+            <th>
+                <label for="montoTotalSujetoIva">Monto Total Sujeto IVA:</label>
+            </th>
+            <th>
+                <label for="creditoFiscal">Crédito Fiscal:</label>
+            </th>
+            <td></td>
+        </tr>
+
+        <tr>
+            <td>
+                <input type="text" pInputText id="codigoControl" [(ngModel)]="compra.codigocontrol"/><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarCodigoControl()">Por favor verifique el código de control.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="subTotal" [(ngModel)]="compra.subtotal"
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [readonly] = true 
+                ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarSubTotal()">Por favor verifique los valores que influyen en el subtotal.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="montoTotalSujetoIva" [(ngModel)]="compra.montototalsujetoiva" 
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [readonly] = true 
+                ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarMontoTotalSujetoIVA()">Por favor verifique los valores que influyen en el monto total sujeto a IVA.</small>
+            </td>
+
+            <td>
+                <p-inputNumber inputId="creditoFiscal" [(ngModel)]="compra.creditofiscal"
+                minValue="0.01" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [readonly] = true
+                ></p-inputNumber><br>
+                <small class="p-error" *ngIf="intentoGuardar && !validarCreditoFiscal()">Por favor verifique los valores que influyen en el credito fiscal.</small>
+            </td>
+            <td>
+                <p-button label="Registrar Compra" styleClass="p-button" (click)="registrarCompra()"></p-button>
+            </td>
+        </tr>
+
+        <tr class="th">
+            <td colspan="5" id="mensaje"> 
+                <p class="bold" >Los datos: 
+                    <label for="subTotal">Subtotal,</label>    
+                    <label for="montoTotalSujetoIva">Monto Total Sujeto IVA y </label>
+                    <label for="creditoFiscal">Crédito Fiscal </label> 
+            
+                    son calculados por el sistema teniendo en cuenta los valores ingresados.
+                </p>
+
+                <p>
+                    <label class="bold" for="subTotal">Subtotal = </label>
+
+                    <label for="montoTotalCompra">Monto Total Compra - </label>
+                    <label for="importeICE">Importe ICE - </label>
+                    <label for="importeEHD">Importe IEHD - </label>
+                    <label for="importeLPJ">Importe IPJ - </label>
+                    <label for="tasas">Tasas - </label>
+                    <label for="otroNoSujetoCredito">Otro No Sujeto Crédito Fiscal - </label>
+                    <label for="importesExentos">Importes Exentos - </label>
+                    <label for="importeTasaCero">Importe Tasa Cero</label>
+                </p>
+                
+
+                <p>
+                    <label style="font-weight: bold;" for="creditoFiscal">Crédito Fiscal = </label> 
+
+                    <label for="subTotal">(Subtotal - </label>
+                    <label for="descuento">Descuento - </label>
+                    <label for="montoGiftCard">Monto Gift Card) * </label>
+                    <label for="">13%</label>
+                </p>
+                
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+<div  [ngClass]="{'loaderActivado': cargando == true , 'loaderDesactivado': cargando == false}">
+    <div [ngClass]="{'spinner': cargando == true}">
+        <p-progressSpinner strokeWidth = 5 ></p-progressSpinner>    
+    </div>
+    <div [ngClass]="{'mensajeSpinner': cargando == true}">
+        <label for=""> Por favor espere mientras registramos su compra...</label>
+    </div>
+    
+</div>
+
+<p-toast position="top-right"></p-toast>

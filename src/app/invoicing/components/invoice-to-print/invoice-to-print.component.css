@@ -1,0 +1,201 @@
+@page {
+    size: legal;
+    margin: 10px 30px;
+}
+
+body {
+    font-family: sans-serif;
+    width: 290mm;
+}
+
+#container {
+    background-size: initial;
+    background-image: url(../../../../assets/logoCosett.png) 90%;
+    background-position:center 30px; /*respecto a body*/
+    background-repeat: no-repeat;
+
+    height: auto;
+    display: fixed;
+    height: 100%;
+    width: 290mm;
+    padding: 5px;
+    padding-right: 5px;
+}
+
+.cabecera {
+    top: 10px;
+    width: 99%;
+    padding: 0;
+}
+
+.logo {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+
+.logocontainer {
+    float: left;
+}
+
+.direccion {
+    font-size: 15pt;
+    float: left;
+    width: 350px;
+    font-weight: bold;
+    text-align: center;
+    margin-left: 10px;
+    padding-left: 10px;
+    margin-top: 7px;
+}
+
+.direccion label{
+    font-weight: initial;
+}
+
+.nitempresa {
+    margin-top: 7px;
+    border: 1px solid black;
+    font-size: 15pt;
+    width: 370px;
+    float: right;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin-right: 0px;
+    border-collapse: separate;
+    border-radius: 5px; 
+}
+
+    .nitempresa p {
+        margin: 0;
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+    .nitempresa table {
+        border: 0px;
+    }
+
+    .nitempresa table tr td{
+        vertical-align: top;
+        word-break: break-all;
+        width: 50%;
+    }
+
+        .nitempresa table tr td p {
+            width: 170px;
+        }
+
+span {
+    font-size: 13pt;
+    font-weight: bolder;
+}
+
+h1 {
+    text-align: center;
+    font-weight: bold;
+    font-size: 25pt;
+    margin: 0;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+h2 {
+    font-size: 20pt;
+    text-align: center;
+    font-weight: normal;
+    margin: 0;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.cliente {
+    font-size: 15pt;
+    float: left;
+    width: 99%;
+    border-radius: 5px;
+    padding: 30px 0px;
+    border-collapse: separate;
+    margin-right: 5px;
+    position: relative;
+}
+
+    .cliente div p {
+        margin: 0;
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+
+.detalle {
+    font-size: 15pt;
+    padding: 30px;
+    float: left;
+    width: 100%;
+    padding: 0px;
+    margin-top: 5px;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.cabeceraDetalle, .productoDetalle{
+    padding: 10px;
+}
+
+.productoDetalle{
+    padding: 15;
+}
+
+table {
+    border: 2px solid black;
+    padding: 0px;
+    width: 99%;
+    border-collapse: collapse;
+}
+
+    table thead {
+        background-color: #EBE9E9;
+    }
+
+.totalLiteral {
+    width: 500px;
+    background-color: white;
+}
+
+.pie {
+    margin-top: 30px;
+    top: 10px;
+    bottom: 0px;
+    font-size: 11pt;
+}
+
+    .pie div div {
+        text-align: center;
+        padding-left: 5px;
+        top: 0px;
+    }
+
+        .pie div div p {
+            margin: 0;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+.qr {
+    text-align: right;
+    margin-right: 5px;
+    margin-top: 5px;
+}
+
+    .qr img {
+        width: 100px;
+        height: 100px;
+    }
+
+.leyenda {
+    font-size: 10pt;
+    text-align: center;
+}
+
+.tdnumal {
+    text-align: right;
+}

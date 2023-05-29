@@ -1,0 +1,17 @@
+/* You can add global styles to this file, and also import other style files */
+ app-invoice-to-print {
+  display: none;
+} 
+  
+@media print {
+    /* invert the display (show/hide) properties of the main */
+    /* aplication component and the printing component       */
+  
+    app-invoice-to-print {
+      display: block;
+    }
+    
+    app-management,app-pending-invoices, app-header, app-footer {
+      display: none;
+    }
+}

@@ -1,0 +1,59 @@
+
+<div class="card" style="margin: 30px auto;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <h4>LISTA ESTABLECIDA POR EL SISTEMA DE IMPUESTOS NACIONALES</h4>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                
+                <input 
+                    pInputText 
+                    type="text" 
+                    (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                    placeholder="Buscar..." 
+                />
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaUnidades" 
+        [rows]="10" 
+        [paginator]="true"  
+        [globalFilterFields]="['codigoparametro','nombreparametro']" 
+        responsiveLayout="scroll"
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+        [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center">Código</th>
+                <th class="center">Descripción</th>
+            </tr>
+        </ng-template>
+
+        
+        <ng-template pTemplate="body" let-unidad>
+            <tr>
+                
+                <td class="codigo center">{{unidad.codigoparametro}}</td>
+
+                <td class="descripcion center">{{unidad.nombreparametro}}</td>
+
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaUnidades ? listaUnidades.length : 0 }} unidades.
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+

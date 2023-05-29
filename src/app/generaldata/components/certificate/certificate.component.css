@@ -1,0 +1,32 @@
+.card{
+    width: 70%;
+    height: 500px;
+}
+
+.field{
+    margin: 10px 0;
+}
+
+.center{
+    text-align: center !important;
+}
+
+.nit{
+    width: 10% !important;
+}
+
+.nombreEmpresa{
+    width: 50% !important;
+}
+
+.direccion{
+    width: 15%;
+}
+
+.ciudad{
+    width: 10%;
+}
+
+.telefono{
+    width: 15%;
+}

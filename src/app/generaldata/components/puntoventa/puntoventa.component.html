@@ -1,0 +1,184 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="modalAgregar()"
+            ></button>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=true label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarlistaPuntoVenta()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=false label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarlistaPuntoVenta()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt [value]="listaPuntoVenta" 
+        [globalFilterFields]="['codigopuntoventa','nombrepuntoventa','tipopuntoventa','codigosucursal']" 
+        responsiveLayout="scroll" 
+        [rowHover]="true" 
+        dataKey="id"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="max-width:10vw" class="center" pSortableColumn="codigopuntoventa">C&oacute;digo<p-sortIcon field="codigopuntoventa"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn="nombrepuntoventa">Nombre<p-sortIcon field="nombrepuntoventa"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">Tipo</th>
+                <th style="max-width:10vw" class="center">C&oacute;digo sucursal</th>
+                <th style="max-width:10vw" class="center">Estado</th>
+                <th style="max-width:10vw" class="center">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-puntoDeVenta>
+            <tr>
+                <td class="center">{{puntoDeVenta.codigopuntoventa}}</td>
+                <td class="center">{{puntoDeVenta.nombrepuntoventa | uppercase}}</td>
+                <td class="center">{{puntoDeVenta.tipopuntoventa | uppercase}}</td>
+                <td class="center">{{puntoDeVenta.codigosucursal}}</td>
+                
+                <td class="center" *ngIf="puntoDeVenta.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td class="center" *ngIf="!puntoDeVenta.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+
+                <td class="center">
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" 
+                        (click)="modalEditar(puntoDeVenta)"
+                        pTooltip="Editar" tooltipPosition="top"
+                    ></button>                  
+                    <button *ngIf="!puntoDeVenta.activo"
+                        pButton pRipple icon="pi pi-refresh" class="p-button-rounded p-button-primary" 
+                        (click)="modalHabilitar(puntoDeVenta)"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                    ></button>                    
+                    <button *ngIf="puntoDeVenta.activo"
+                        pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" 
+                        (click)="modalEliminar(puntoDeVenta)"
+                        pTooltip="Deshabilitar" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} sucursales.
+            </div>
+        </ng-template>
+        
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} puntos de venta"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+<!--Modal Punto de Venta-->
+<p-dialog 
+    [(visible)]="modal" 
+    [style]="{width: '550px'}" 
+    header="Detalle de Punto de Venta" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field" style="margin: 10px 0">
+            <label for="codigopuntoventa">Código del Punto de Venta:</label>
+            <input 
+                type="text" 
+                pInputText id="codigopuntoventa"
+                [(ngModel)]="puntoDeVenta.codigopuntoventa"
+                [readOnly]="!editar"
+            />
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="codigosucursal">C&oacute;digo de sucursal:</label>
+            <p-dropdown 
+                [(ngModel)]="puntoDeVenta.codigosucursal" 
+                inputId="codigosucursal" 
+                [options]="listaSucursales" 
+                optionLabel="nombresucursal" 
+                optionValue="codigosucursal"
+                placeholder="Seleccione la sucursal"
+                [virtualScroll] = true
+                [virtualScrollItemSize] = 45
+            >            
+                <ng-template let-option pTemplate="item">
+                    <span>{{option.nombresucursal}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="guardar && !puntoDeVenta.codigosucursal">Seleccione la sucursal</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="nombrepuntoventa">Nombre del punto de venta:</label>
+            <input 
+                type="text" 
+                pInputText id="nombrepuntoventa"
+                [(ngModel)]="puntoDeVenta.nombrepuntoventa" 
+            />
+        </div>
+
+        <div class="field" style="margin: 10px 0">
+            <label for="tipopuntoventa">Tipo de punto de venta:</label>
+            <input 
+                type="text" 
+                pInputText id="tipopuntoventa"
+                [(ngModel)]="puntoDeVenta.tipopuntoventa" 
+            />
+        </div>
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModal()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+    </ng-template>
+
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-toast position="top-right"></p-toast> 

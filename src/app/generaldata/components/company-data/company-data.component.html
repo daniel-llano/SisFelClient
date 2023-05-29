@@ -1,0 +1,46 @@
+
+<div class="card" style="margin: 30px auto;">
+
+    <p-toolbar styleClass="mb-4">
+        <div style="width: 100%; text-align: center;">
+            <h4>DATOS DE LA EMPRESA REGISTRADOS EN EL SISTEMA DE IMPUESTOS NACIONALES</h4>
+        </div>
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaDatosGenerales" 
+        responsiveLayout="scroll"
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+        [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="nit center">NIT</th>
+                <th class="nombreEmpresa center">Nombre de la Empresa</th>
+                <th class="direccion center">Direccion</th>
+                <th class="telefono center">Telefono</th>
+                <th class="ciudad center">Ciudad</th>
+            </tr>
+        </ng-template>
+
+        
+        <ng-template pTemplate="body" let-general>
+            <tr>
+                
+                <td class="nit center">{{general.nit}}</td>
+
+                <td class="nombreEmpresa center">{{general.nombreempresa | uppercase}}</td>
+
+                <td class="direccion center">{{general.direccion | uppercase}}</td>
+
+                <td class="telefono center">{{general.telefono}}</td>
+
+                <td class="ciudad center">{{general.ciudad | uppercase}}</td>
+
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+

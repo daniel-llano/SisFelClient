@@ -1,0 +1,309 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button 
+                pButton 
+                pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=true label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarListaUsuarios()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=false label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarListaUsuarios()"></p-radioButton>
+            </div>
+            
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listausers"
+        [globalFilterFields]="['nombreusuario','ci','nombres','ap','am','telefono']" 
+        responsiveLayout="scroll" 
+        [rowHover]="true" 
+        dataKey="id"
+    >
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="max-width:10vw" class="center">CI</th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "nombreusuario">Nombre de Usuario<p-sortIcon field="nombreusuario"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "nombres">Nombres<p-sortIcon field="nombres"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "ap">Apellidos<p-sortIcon field="ap"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">Tel&eacute;fono</th>
+                <th style="max-width:10vw" class="center">Rol</th>
+                <th style="max-width:10vw" class="center">Estado</th>
+                <th style="max-width:10vw" class="center">Datos de sesi&oacute;n</th>
+                <th style="max-width:10vw" class="center">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-user>
+            <tr>
+                <td style="max-width:10vw" class="center">{{user.ci}}</td>
+                <td style="max-width:10vw" class="center">{{user.nombreusuario + " " | uppercase}}</td>
+                <td style="max-width:10vw" class="center">{{user.nombres | uppercase}}</td>
+                <td style="max-width:10vw" class="center">{{user.ap + " " + user.am | uppercase}}</td>
+                <td style="max-width:10vw" class="center">{{user.telefono}}</td>
+                <td style="max-width:10vw" class="center">{{user.codigorolNavigation.nombrerol | uppercase}}</td>
+                <td style="max-width:10vw" class="center" *ngIf="user.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td style="max-width:10vw" class="center" *ngIf="!user.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+                
+                <td style="max-width:10vw" class="center">
+                    <button 
+                        pButton pRipple icon="pi pi-eye" 
+                        class="p-button-rounded p-button-blue mr-2" 
+                        (click)="abriModalEditarDatosSesion(user.nombreusuario)"
+                        pTooltip="Cambiar contraseña" tooltipPosition="top"
+                    ></button>
+                </td>
+
+                <td style="max-width:10vw" class="center">   
+                    <button 
+                        pButton  pRipple icon="pi pi-pencil" 
+                        class="p-button-rounded p-button-success mr-2" 
+                        (click)="abriModalEditarDato(user)"
+                        pTooltip="Editar" tooltipPosition="top"
+                    ></button>
+                   
+                    <button *ngIf="!user.activo"
+                            pButton pRipple icon="pi pi-refresh" 
+                            class="p-button-rounded p-button-warning" 
+                            (click)="abrirModalHabilitarDato(user)"
+                            pTooltip="Habilitar" tooltipPosition="top"
+                        ></button>
+
+                    <button *ngIf="user.activo"
+                        pButton pRipple icon="pi pi-trash" 
+                        class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalEliminarDato(user)"
+                        pTooltip="Deshabilitar" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} usuarios.
+            </div>
+        </ng-template>
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+
+<!--Modal-->
+
+<p-dialog 
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Detalle de Usuario" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="codigorol">Rol:</label>
+            <p-dropdown 
+                [(ngModel)]="user.codigorol" 
+                inputId="codigorol" 
+                [options]="listadeRoles" 
+                optionLabel="nombrerol" 
+                optionValue="codigorol"
+                placeholder="Seleccione el rol"
+                [virtualScroll] = true
+                [virtualScrollItemSize] = 1
+            >            
+                <ng-template let-option pTemplate="item">
+                    <span>{{option.nombrerol}}</span>
+                </ng-template>
+            </p-dropdown>
+            <small class="p-error" *ngIf="intentoGuardar && !user.codigorol">Seleccione su rol</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="PuntoVenta">Punto de Venta:</label>
+            
+            <p-multiSelect [options]="listaPuntosVenta" [(ngModel)]="listaPuntosVentaUsuario" optionLabel="nombrepuntoventa" ></p-multiSelect>
+            <small class="p-error" *ngIf="intentoGuardar && !user.codigorol">Seleccione su rol</small>
+        </div>
+
+        <div *ngIf="!estaEditando" class="field" style="margin: 10px 0;">
+            <label for="nombreusuario">Nombre de usuario (Sesión)</label>
+            <input 
+                type="text" 
+                pInputText id="nombreusuario" 
+                [(ngModel)]="user.nombreusuario" 
+                required autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarNombreUsuario()">Por favor verifique el usuario de sesión.</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="ci">CI</label>
+            <input 
+                type="text" 
+                pInputText id="ci" 
+                minlength="6"
+                [(ngModel)]="user.ci" 
+                required autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarCi()">Por favor verifique el CI del usuario.</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="nombres">Nombres:</label>
+            <input 
+                type="text" 
+                pInputText id="nombres" 
+                [(ngModel)]="user.nombres" 
+                required autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarNombres()">Por favor verifique el nombre del usuario</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="ap">Apellido paterno:</label>
+            <input 
+                type="text" 
+                pInputText id="ap" 
+                [(ngModel)]="user.ap" 
+                required autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarApellido(user.ap)">Por favor verifique el apellido paterno del usuario</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="am">Apellido materno:</label>
+            <input 
+                type="text" 
+                pInputText id="am" 
+                [(ngModel)]="user.am" 
+                required autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarApellido(user.am)">Por favor verifique apellido materno del usuario</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="telefono">Teléfono:</label>
+            <input 
+                type="text" 
+                pInputText id="telefono" 
+                [(ngModel)]="user.telefono"
+                required 
+                autofocus 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarTelefono()">Por favor verifique el teléfono del usuario</small>
+        </div>
+
+        <div *ngIf="!estaEditando" class="field" style="margin: 10px 0;">
+            <label for="clave">Clave:</label>
+            <p-password class="input" id="clave" [(ngModel)]="user.clave" [feedback]="false" [toggleMask]="true"></p-password>
+            <small class="p-error" *ngIf="intentoGuardar && !user.clave">Ingrese su clave, minimamente 5 caracteres</small>
+        </div>
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalDetalle()"
+        ></button>
+        
+        <button 
+            pButton pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!--Modal Datos Sesion-->
+<p-dialog 
+    [(visible)]="ventanaModalSesion" 
+    [style]="{width: '550px'}" 
+    header="Datos de Sesión" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <div class="field" style="margin: 10px 0;">
+            <label for="nombreusuario">Nombre de Usuario:</label>
+            <input 
+                type="text" 
+                pInputText id="nombreusuario" 
+                [(ngModel)]="user.nombreusuario" 
+                required autofocus readonly   
+            />
+            <p-messages severity="info">
+                <ng-template pTemplate>
+                    <div class="ml-2">El nombre de usuario no se puede cambiar.</div>
+                </ng-template>
+            </p-messages>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="clave">Clave:</label>
+            <p-password class="input" id="clave" name="clave" [(ngModel)]="user.clave" [feedback]="false" [toggleMask]="true"></p-password>
+            <small class="p-error" *ngIf="intentoGuardarSesion && !validarClave()">Por favor verifique la contraseña del usuario</small>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        
+        <button 
+            pButton pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalSesion()"
+        ></button>
+        
+        <button 
+            pButton pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="actualizarContrasenia()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<p-toast position="top-right"></p-toast> 
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+
+

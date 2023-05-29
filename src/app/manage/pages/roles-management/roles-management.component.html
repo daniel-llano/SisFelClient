@@ -1,0 +1,186 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button 
+                pButton 
+                pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+            
+
+        </ng-template>
+
+        <ng-template pTemplate="right">
+
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value="true" label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarLista()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value="false" label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarLista()"></p-radioButton>
+            </div>
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="rols" 
+        [globalFilterFields]="['codigorol','nombrerol','descripcion']" 
+        responsiveLayout="scroll"
+        [rowHover]="true" 
+        dataKey="id"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" pSortableColumn = "codigorol">C&oacute;digo Rol<p-sortIcon field="codigorol"></p-sortIcon></th>
+                <th class="center" pSortableColumn = "nombrerol">Nombre<p-sortIcon field="nombrerol"></p-sortIcon></th>
+                <th class="center">Descripci&oacute;n</th>
+                <th class="center">Estado</th>
+                <th class="center">Acciones</th>
+            </tr>
+        </ng-template>
+
+        
+        <ng-template pTemplate="body" let-rol>
+            <tr>
+                <td class="center">{{rol.codigorol}}</td>
+                <td class="center">{{rol.nombrerol | uppercase}}</td>
+                <td class="center">{{rol.descripcion | uppercase}}</td>
+                <td class="center" *ngIf="rol.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td class="center" *ngIf="!rol.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+                
+
+                <td class="center">
+                    <button 
+                        *ngIf="!rol.activo"
+                        pButton pRipple icon="pi pi-refresh" 
+                        class="p-button-rounded p-button-primary" 
+                        (click)="abrirModalHabilitarDato(rol)"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                    ></button>
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" 
+                        class="p-button-rounded p-button-success mr-2" 
+                        (click)="abriModalEditarDato(rol)"
+                    ></button>
+                    
+                    <button 
+                        *ngIf="rol.activo"
+                        pButton pRipple icon="pi pi-trash" 
+                        class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalEliminarDato(rol)"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} roles.
+            </div>
+        </ng-template>
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} roles"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+
+<!--Modal-->
+
+<p-dialog 
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Detalle Rol" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        
+        <div class="field" style="margin: 10px 0;">
+            <label for="Nombre">Nombre:</label>
+            <input 
+                type="text" 
+                pInputText id="name" 
+                [(ngModel)]="rol.nombrerol" 
+                required 
+                autofocus 
+            />
+            
+            <small class="p-error" *ngIf="intentoGuardar && !rol.nombrerol">Ingrese el nombre del rol.</small>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <label for="Nombre">Descripción:</label>
+            <input 
+                type="text" 
+                pInputText id="name" 
+                maxlength="150"
+                [(ngModel)]="rol.descripcion" 
+                required 
+                autofocus 
+            />
+            
+            <small class="p-error" *ngIf="intentoGuardar && !rol.descripcion">Ingrese la descripción del rol,maximo 150 caracteres.</small>
+        </div>
+
+        <h5>Enlace</h5>
+        <div *ngFor="let category of categories" class="field-checkbox">
+            <div class="field-checkbox">
+                <p-checkbox name="group2"  [value]="category.codigoenlace"  [(ngModel)]="selectedCategories" ></p-checkbox>
+                <label> {{category.nombreenlace}}</label>
+                
+            </div>
+            <br>
+        </div>
+        
+        
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModal()"
+        ></button>
+        
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+
+    </ng-template>
+</p-dialog>
+
+<p-toast position="top-right"></p-toast> 
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

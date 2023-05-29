@@ -1,0 +1,21 @@
+<div class="content">
+    
+    <p-menubar class="items" [model]="items"  >
+        <ng-template pTemplate="start">
+            <img src="../../../assets/logoCosett.png" height="40" class="mr-2">
+        </ng-template>
+
+        <ng-template pTemplate="end">
+            <p-dropdown 
+                *ngIf="listaPuntosVenta.length > 0"
+                [style]="{'width': '200px'}"
+                (onChange)="actualizarPuntoVenta($event)"
+                [(ngModel)]="puntoVenta.codigopuntoventa"
+                optionValue="codigopuntoventa" 
+                [options]="listaPuntosVenta" optionLabel="nombrepuntoventa" 
+                placeholder="Punto de Venta">
+            </p-dropdown>
+        </ng-template>
+    </p-menubar>
+</div>
+

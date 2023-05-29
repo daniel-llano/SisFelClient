@@ -1,0 +1,204 @@
+<div class="card" style="margin: 30px auto ;width: 90vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Agregar" 
+                icon="pi pi-plus" 
+                class="p-button-success mr-2" 
+                (click)="abrirModalNuevoDato()"
+            ></button>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=true label="Habilitados" [(ngModel)]="filtroEstado" (onClick)="cargarlistaSucursales()"></p-radioButton>    
+            </div>
+            <div style="margin-right: 40px;">
+                <p-radioButton name="filtroEstado" value=false label="Deshabilitados" [(ngModel)]="filtroEstado" (onClick)="cargarlistaSucursales()"></p-radioButton>
+            </div>
+
+            <span class="p-input-icon-left" style="float: right">
+                <i class="pi pi-search"></i>
+                <input 
+                    pInputText 
+                    type="text"
+                    [(ngModel)]="filtro" 
+                    placeholder="Buscar..." 
+                />
+                &nbsp;
+                <button pButton pRipple type="button" icon="pi pi-search" class="p-button-rounded p-button-success" (click)="filtrar()"></button>
+            </span>
+        </ng-template>
+
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaSucursales"
+        [globalFilterFields]="['nombresucursal','direccion','barrio','municipio','telefono']" 
+        responsiveLayout="scroll" 
+        [rowHover]="true" 
+        dataKey="id"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="max-width:10vw" class="center" pSortableColumn = "codigosucursal">C&oacute;digo<p-sortIcon field="codigosucursal"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "nombresucursal">Nombre<p-sortIcon field="nombresucursal"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">Direcci&oacute;n</th>
+                <th style="max-width:10vw" class="center">Barrio</th>
+                <th style="max-width:10vw" class="center" pSortableColumn = "municipio">Municipio<p-sortIcon field="municipio"></p-sortIcon></th>
+                <th style="max-width:10vw" class="center">Tel&eacute;fono</th>
+                <th style="max-width:10vw" class="center">Estado</th>
+                <th style="max-width:10vw" class="center">Acciones</th>
+            </tr>
+        </ng-template>
+        
+        <ng-template pTemplate="body" let-sucursal>
+            <tr>
+                <td class="center">{{sucursal.codigosucursal}}</td>
+                <td class="center">{{sucursal.nombresucursal | uppercase}}</td>
+                <td class="center">{{sucursal.direccion | uppercase}}</td>
+                <td class="center">{{sucursal.barrio | uppercase}}</td>
+                <td class="center">{{sucursal.municipio | uppercase}}</td>
+                <td class="center">{{sucursal.telefono}}</td>
+                
+                <td class="center" *ngIf="sucursal.activo"><span style="background-color: #c9e7c9; color: #38703c; padding: 3%; border-radius: 5%; font-weight: 600;">HABILITADO</span></td>
+                <td class="center" *ngIf="!sucursal.activo"><span style="background-color: #feccd2; color: #c83d49; padding: 3%; border-radius: 5%; font-weight: 600;">DESHABILITADO</span></td>
+
+                <td class="center">
+                    <button 
+                        pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" 
+                        (click)="abriModalEditarDato(sucursal)"
+                        pTooltip="Editar" tooltipPosition="top"
+                    ></button>                  
+                    <button *ngIf="!sucursal.activo"
+                        pButton pRipple icon="pi pi-refresh" class="p-button-rounded p-button-primary" 
+                        (click)="abrirModalHabilitarDato(sucursal)"
+                        pTooltip="Habilitar" tooltipPosition="top"
+                    ></button>                    
+                    <button *ngIf="sucursal.activo"
+                        pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" 
+                        (click)="abrirModalEliminarDato(sucursal)"
+                        pTooltip="Deshabilitar" tooltipPosition="top"
+                    ></button>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{total ? total : 0 }} sucursales.
+            </div>
+        </ng-template>
+    </p-table>
+    <p-paginator 
+        [first]="pageIndex" 
+        [rows]="pageSize" 
+        [totalRecords]="total" 
+        (onPageChange)="paginate($event)"
+        [showJumpToPageDropdown]="true" [showPageLinks]="false" 
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} scuursales"
+        [rowsPerPageOptions]="pageSizeOptions">
+    </p-paginator>
+</div>
+
+<!--Modal Sucursal-->
+<p-dialog 
+    id="sucursal"
+    [(visible)]="ventanaModal" 
+    [style]="{width: '550px'}" 
+    header="Detalle Sucursal" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field">
+            <label for="codigosucursal">Código de la Sucursal:</label>
+            <input 
+                type="text" 
+                pInputText id="codigosucursal"
+                [(ngModel)]="sucursal.codigosucursal" 
+                [readOnly]="!puedeEditarId"
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarCodigoSucursal()">Por favor verifique el código del sucursal que sea entero y no repetido.</small>
+        </div>
+
+        <div class="field">
+            <label for="nombresucursal">Nombre de la Sucursal:</label>
+            <input 
+                type="text" 
+                pInputText id="nombresucursal"
+                [(ngModel)]="sucursal.nombresucursal" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarNombreSucursal()">Por favor verifique el nombre de la sucursal.</small>
+        </div>
+
+        <div class="field">
+            <label for="direccion">Dirección:</label>
+            <input 
+                type="text" 
+                pInputText id="direccion"
+                [(ngModel)]="sucursal.direccion" 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarDireccion()">Por favor verifique la dirección de la sucursal.</small>
+        </div>
+
+        <div class="field" >
+            <label for="barrio">Barrio:</label>
+            <input 
+                type="text" 
+                pInputText id="barrio" 
+                [(ngModel)]="sucursal.barrio" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarBarrio()">Por favor verifique el barrio de la sucursal.</small>
+        </div>
+
+        <div class="field" >
+            <label for="municipio">Municipio:</label>
+            <input 
+                type="text" 
+                pInputText id="municipio" 
+                [(ngModel)]="sucursal.municipio" 
+                required
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarMunicipio()">Por favor verifique el municipio de la sucursal.</small>
+        </div>
+
+        <div class="field" >
+            <label for="telefono">Tel&eacute;fono:</label>
+            <input 
+                type="text" 
+                pInputText id="telefono" 
+                [(ngModel)]="sucursal.telefono" 
+            />
+            <small class="p-error" *ngIf="intentoGuardar && !validarTelefono()">Por favor verifique el tel&eacute;fono de la sucursal.</small>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModal()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="guardarDatos()"
+        ></button>
+    </ng-template>
+
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-toast position="top-right"></p-toast> 

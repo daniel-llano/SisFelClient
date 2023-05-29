@@ -1,0 +1,214 @@
+<div class="card" style="margin: 30px auto ;width: 95vw;">
+
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton pRipple 
+                label="Teléfono" 
+                icon="pi pi-search" 
+                class="p-button-success mr-2" 
+                (click)="ngAfterViewInit()"
+            ></button>
+
+            <h4 style="margin-left: 20px;">LISTA DE FACTURAS REGISTRADAS POR EL SISTEMA - ENVIADAS AL SISTEMA DE IMPUESTOS NACIONALES</h4> 
+        </ng-template>
+
+        <ng-template pTemplate="right">
+       
+            <span class="p-input-icon-left" style="float: right" >
+                <i class="pi pi-search"></i>
+                
+                <input 
+                    pInputText 
+                    type="text" 
+                    (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                    placeholder="Buscar..." 
+                />
+            </span>
+        </ng-template>
+    </p-toolbar>
+​
+    <p-table #dt [value]="listaFacturas" [rows]="10" [paginator]="true"
+         [globalFilterFields]="['numerofactura','nombrerazonsocial','numerodocumento','codigodocumentosector','montototal','fechaemision','estadoFactura']" responsiveLayout="scroll"
+         [rowHover]="true" dataKey="id"
+        currentPageReportTemplate="Mostrando {first} hasta el {last} de {totalRecords} entradas" [showCurrentPageReport]="true">
+​
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" style="width: 5vw;" pSortableColumn="numerofactura">N° Factura<p-sortIcon field="numerofactura"></p-sortIcon></th>
+                <th class="center" style="width: 5vw">Teléfono</th>
+                <th class="center" style="width: 20vw;">Razón Social</th>
+                <th class="center" style="width: 10vw;">N° de Documento</th>
+                <th class="center" style="width: 4vw;">Sector</th>
+                <th class="center" style="width: 9vw;">SubTotal (Bs)</th>
+                <th class="center" style="width: 9vw;">Descuento Adicional (Bs)</th>
+                <th class="center" style="width: 9vw;">Total a Pagar (Bs)</th>
+                <th class="center" style="width: 8vw;" pSortableColumn="fechaemision">Fecha de Emisión<p-sortIcon field="fechaemision"></p-sortIcon></th>
+                <th class="center" style="width: 8vw;">Estado</th>
+                <th class="center" style="width: 20vw;">Acciones</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-factura>
+            <tr>
+                <td class="center">{{factura.numerofactura}}</td>
+                <td class="center">{{factura.codigotelefonoclienteNavigation.telefono}}</td>
+
+                <td class="center">{{factura.nombrerazonsocial | uppercase}}</td>
+                <td class="center">{{factura.numerodocumento}}</td>
+
+                <td class="center" *ngIf="factura.codigodocumentosector == 1">Compra Venta</td>
+                <td class="center" *ngIf="factura.codigodocumentosector == 22">Telecomunicaciones</td>
+                
+                <td class="center">{{factura.montototal + factura.descuentoadicional |number:'.2' }}</td>
+                <td class="center">{{factura.descuentoadicional |number:'.2'  }}</td>
+                <td class="center" style="font-weight: bold;">{{factura.montototal |number:'.2' }}</td>
+                <td class="center">{{factura.fechaemision | date:'dd-MM-yyyy hh:mm a'}}</td>
+
+                <td class="center" ><span style="background-color: #ccd9fe; color: #3d56c8; padding: 3%; border-radius: 5%; font-weight: 600;">PENDIENTE</span></td>
+            
+                <td class="center">
+                    <button pButton pRipple type="button" icon="pi pi-check" class="p-button-rounded p-button-help" (click)="verificarEstadoFactura(factura.codigopuntoventa,factura.cuf, factura.codigodocumentosector, factura.codigofactura, factura.codigotelefonoclienteNavigation.codigotelefonocliente)" pTooltip="Verificar Estado en el SIN" tooltipPosition="top"></button>
+                    <button pButton pRipple type="button" icon="pi pi-info" class="p-button-rounded p-button-warning" (click)="abrirModalDetalleFactura(factura.facturadetalles)" pTooltip="Detalle" tooltipPosition="top"></button>
+                    <button pButton pRipple type="button" icon="pi pi-file-pdf" class="p-button-rounded p-button-primary" (click)="descargarPDF(factura)"  pTooltip="Descargar PDF" tooltipPosition="top"></button>
+                    <button pButton pRipple type="button" icon="pi pi-file-o" class="p-button-rounded p-button-success" (click)="abrirModalEnviarArchivos(factura)" pTooltip="Enviar Archivos" tooltipPosition="top"></button>
+                    <button pButton pRipple type="button" icon="pi pi-money-bill" class="p-button-rounded p-button-help" (click)="abrirModalCancelarFactura(factura.codigofactura, factura.numerofactura, factura.codigotelefonoclienteNavigation.codigotelefonocliente)" pTooltip="Registrar Cancelación" tooltipPosition="left"></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaFacturas ? listaFacturas.length : 0 }} facturas.
+            </div>
+        </ng-template>
+    </p-table>
+</div>
+​
+<!--Modal Lista de Detalles-->
+​
+<p-dialog [(visible)]="ventanaModalDetalle" [style]="{width: '50vw'}" header="Detalle Factura" [modal]="true" styleClass="p-fluid">
+    <p-table [value]="listaDetalles" [rows]="10" [paginator]="true" [rowHover]="true" dataKey="id" 
+    responsiveLayout="scroll" currentPageReportTemplate="Mostrando {first} hasta el {last} de {totalRecords} entradas" [showCurrentPageReport]="true">
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="center" pSortableColumn="codigoproducto">Código Producto<p-sortIcon field="codigoproducto"></p-sortIcon></th>
+                <th class="center" >Descripción </th>
+                <th class="center" >Precio Unitario (Bs)</th>
+                <th class="center" >Cantidad</th>
+                <th class="center" >Monto Descuento (Bs)</th>
+                <th class="center" >Subtotal (Bs)</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-detalle>
+            <tr>
+                <td class="center">{{detalle.codigoproducto}}</td>
+                <td class="center">{{detalle.descripcion | uppercase}}</td>
+                <td class="center">{{detalle.preciounitario |number:'.2' }}</td>
+                <td class="center">{{detalle.cantidad}}</td>
+                <td class="center">{{detalle.montodescuento |number:'.2' }}</td>
+                <td class="center">{{detalle.subtotal |number:'.2' }}</td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="flex align-items-center justify-content-between">
+                En total hay {{listaDetalles ? listaDetalles.length : 0 }} productos.
+            </div>
+        </ng-template>
+
+    </p-table>
+</p-dialog>
+
+
+
+<!--Modal Buscar Facturas Cliente-->
+<p-dialog 
+    id="buscarFacturasCliente"    
+    [(visible)]="ventanaModalBuscarFacturasCliente" 
+    [style]="{width: '550px',height: '275px'}" 
+    header="Buscar Facturas Pendientes" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <label for="codigo" style="font-weight: bold;">Ingrese el número de teléfono del cliente:</label>
+        <input 
+            type="text" 
+            pInputText id="telefonoCliente" 
+            [(ngModel)]="telefonoCliente" 
+        />
+        <small class="p-error" *ngIf="intentoBuscarFacturasCliente && (telefonoCliente==0 || this.buscarCliente() == -1)">No se pudo encontrar un cliente con ese número de teléfono.</small>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalBuscarFacturasCliente()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Guardar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="buscarFacturasCliente()"
+        ></button>
+    </ng-template>
+</p-dialog>
+
+<!--Modal Correo-->
+<p-dialog 
+    id="enviarCorreo"    
+    [(visible)]="ventanaModalEnviarArchivos" 
+    [style]="{width: '550px',height: '275px'}" 
+    header="Enviar Archivos" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+        <label for="email">Correo Electrónico:</label>
+        <input 
+            type="email" 
+            pInputText id="email" 
+            [(ngModel)]="correoReceptor" 
+        />
+        <small class="p-error" *ngIf="intentoGuardarEnviarArchivos && (correoReceptor=='' || !this.validarEmail())">Por favor verifique el correo electrónico del cliente.</small>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalEnviarArchivos()"
+        ></button>
+        <button 
+            pButton 
+            pRipple 
+            label="Enviar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="enviarArchivos()"
+        ></button>
+    </ng-template>
+</p-dialog>
+​
+<p-toast position="top-right"></p-toast> 
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<div  [ngClass]="{'loaderActivado': cargando == true , 'loaderDesactivado': cargando == false}">
+    <div [ngClass]="{'spinner': cargando == true}">
+        <p-progressSpinner strokeWidth = 5 ></p-progressSpinner>    
+    </div>
+    <div [ngClass]="{'mensajeSpinner': cargando == true}">
+        <label for=""> {{mensajeCarga}}</label>
+    </div>
+</div>

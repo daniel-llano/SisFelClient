@@ -1,0 +1,115 @@
+
+<div class="card" style="margin: 30px auto;">
+
+    <p-toolbar styleClass="mb-4">
+        <div style="width: 100%; text-align: center;">
+            <h4>DATOS DEL CERTIFICADO UTILIZADO EN EL PROCESO DE FACTURACION</h4>
+        </div>
+
+        <ng-template pTemplate="right">
+            <button pButton pRipple 
+                label="Revocar Certificado" 
+                icon="pi pi-flag" 
+                class="p-button-primary" 
+                (click)="abrirModalRevocarCertificado()"
+                pTooltip="Revocar Certificado" tooltipPosition="top"
+            ></button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt 
+        [value]="listaDatosCertificado" 
+        responsiveLayout="scroll"
+        dataKey="id"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} entradas" 
+        [showCurrentPageReport]="true"
+    >
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="nit center">ID Certificado</th>
+                <th class="nombreEmpresa center">Emisor</th>
+                <th class="direccion center">Fecha inicio</th>
+                <th class="telefono center">Fecha fin validez</th>
+            </tr>
+        </ng-template>
+
+        
+        <ng-template pTemplate="body" let-certificado>
+            <tr>
+                <td class="nit center">{{certificado.id}}</td>
+
+                <td class="nombreEmpresa center">{{certificado.emisor | uppercase}}</td>
+
+                <td class="direccion center">{{certificado.fechaInicio }}</td>
+
+                <td class="telefono center">{{certificado.fechaFinValidez }}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+
+<!--Modal Correo-->
+
+<p-dialog 
+    id="RevocarCertificado"    
+    [(visible)]="ventanaModalRevocarCertificado" 
+    [style]="{width: '550px',height: '400px'}" 
+    header="Revocar Certificado" 
+    [modal]="true" 
+    styleClass="p-fluid"
+>
+    <ng-template pTemplate="content">
+
+        <div class="field">
+            <label for="certificado">Certificado:</label>
+            <input 
+                type="text" 
+                pInputText id="certificado" 
+                [(ngModel)]="certificado" 
+            />
+        
+            <small class="p-error" *ngIf="intentoGuardarRevocarCertificado && (certificado=='')">Por favor verifique el certificado.</small>
+
+        </div>
+
+        <div class="field">
+            <label for="razon">Razon:</label>
+            <input 
+                type="text" 
+                pInputText id="razon" 
+                [(ngModel)]="razon" 
+            />
+            
+            <small class="p-error" *ngIf="intentoGuardarRevocarCertificado && (razon=='')">Por favor verifique la razon por la cual el certificado sera revocado.</small>
+        </div>
+
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        
+        <button 
+            pButton 
+            pRipple 
+            label="Cancelar" 
+            icon="pi pi-times" 
+            class="p-button-text" 
+            (click)="ocultarModalRevocarCertificado()"
+        ></button>
+        
+        <button 
+            pButton 
+            pRipple 
+            label="Revocar" 
+            icon="pi pi-check" 
+            class="p-button-text" 
+            (click)="revocarCertificado()"
+        ></button>
+
+    </ng-template>
+
+</p-dialog>
+
+<p-toast position="top-right"></p-toast> 
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

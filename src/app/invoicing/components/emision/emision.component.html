@@ -1,0 +1,156 @@
+<div class="content">
+    <div class="Formulario">
+
+        <div class="titulo">
+            <label for="">Emitir Factura</label>
+        </div>
+
+        <div class="formulario">
+            <form action="">
+                <div>
+                    <label class="label">Nro. Telefono:</label>
+                    <p-inputNumber name="nro_telefono" [(ngModel)]="factura.codigotelefonoclienteNavigation.telefono" minValue="6630001"
+                        [useGrouping]="false"></p-inputNumber>
+                    <button pButton pRipple label="Buscar" icon="pi pi-search" class="p-button-sucess mr-2"
+                        (click)="buscar()"></button>
+                </div>
+                <div style="width: 100%;">
+                    <label class="label">Nro. Documento:</label>
+                    <input type="text" pInputText name="nit" [(ngModel)]="factura.numerodocumento" readonly="true"
+                        class="nit">
+                    <label class="label">Razon Social:</label>
+                    <input type="text" pInputText name="razon_social" [(ngModel)]="factura.nombrerazonsocial"
+                        readonly="true" class="razon_social">
+                </div>
+            </form>
+        </div>
+
+        <form action="">
+            <div>
+                <table class="tabla">
+                    <p-toolbar styleClass="mb-4">
+                        <ng-template pTemplate="left">
+                            <tr>
+                                <th class="tddetalle">
+                                    <label class="label">Servicio:</label>
+                                </th>
+                                <td>
+                                    <p-dropdown [(ngModel)]="producto" inputId="codigoProducto"
+                                        [options]="listaProductos" optionLabel="nombreproducto" 
+                                        name="codigoProducto" [filter]="true" filterBy="nombreproducto"
+                                        placeholder="Seleccione el tipo de producto" class="productos"
+                                        [showClear]="true">
+                                    </p-dropdown>
+                                </td>
+                                <th>
+                                    <label class="label">Cantidad:</label>
+                                </th>
+                                <td>
+                                    <p-inputNumber name="cantidad" [(ngModel)]="detalle.cantidad" minValue="1"
+                                    mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"
+                                    [useGrouping]="false"></p-inputNumber>
+                                </td>
+                                <td style="vertical-align: bottom;">
+                                    <button pButton pRipple label="Agregar" icon="pi pi-check"
+                                        class="p-button-sucess mr-2" (click)="agregarDetalle()"></button>
+                                </td>
+                        </ng-template>
+                    </p-toolbar>
+                </table>
+            </div>
+        </form>
+
+        <p-table [value]="detalles" [tableStyle]="{'width': '100%'}" dataKey="codigoProducto" editMode="row">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="tddetalle">Servicio</th>
+                    <th class="tdcantidad">Cantidad</th>
+                    <th class="tdprecio">Precio (Bs)</th>
+                    <th class="tddescuento">Descuento %</th>
+                    <th class="tdtotal">Total (Bs)</th>
+                    <th class="tdtotal"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-detalle let-editing="editing" let-ri="rowIndex">
+                <tr [pEditableRow]="detalle">
+                    <td>{{detalle.descripcion}}</td>
+                    <td>
+                        <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <p-inputNumber [(ngModel)]="detalle.cantidad" minValue="1" mode="decimal"
+                                    [minFractionDigits]="2" [maxFractionDigits]="2" 
+                                    [useGrouping]="false"></p-inputNumber>
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{detalle.cantidad|number:'.2'}}
+                            </ng-template>
+                        </p-cellEditor>
+                    </td>
+                    <td>{{detalle.preciounitario|number:'.2'}}</td>
+                    <td>
+                        <p-cellEditor>
+                            <ng-template pTemplate="input">
+                                <p-inputNumber [(ngModel)]="detalle.montodescuento" minValue="1"
+                                    [useGrouping]="false"></p-inputNumber>
+                            </ng-template>
+                            <ng-template pTemplate="output">
+                                {{detalle.montodescuento}}
+                            </ng-template>
+                        </p-cellEditor>
+                    </td> 
+                    <td>{{detalle.subtotal |number:'.2'}}</td>
+                    <td>
+                        <button *ngIf="!editing" pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil"
+                            (click)="habilitarEdicionDetalle()" class="p-button-rounded p-button-success mr-2">
+                        </button>
+
+                        <button *ngIf="editing" pButton pRipple type="button" pSaveEditableRow icon="pi pi-check"
+                            (click)="confirmarEdicionDetalle(detalle)"
+                            class="p-button-rounded p-button-text p-button-success p-mr-2">
+                        </button>
+
+                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                            (click)="abrirModalEliminarDato(detalle)">
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td colspan="4" style='text-align:right'><label class="label">Descuento Adicional %</label></td>
+                    <td>
+                        <p-inputNumber name="descuento" [(ngModel)]="factura.descuentoadicional" 
+                            minValue="1" [maxlength]="3" [max]="99" 
+                            [useGrouping]="false" class="subtotal" (ngModelChange)="calcularTotal()"></p-inputNumber>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="4" style='text-align:right'><label class="label">Total</label></td>
+                    <td>
+                        <p-inputNumber name="total" [(ngModel)]="factura.montototal" 
+                            mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"
+                            readOnly="true" class="total"> </p-inputNumber>
+                    </td>
+                    <td style="text-align: right;">
+                        <p-button label="Generar Factura" icon="pi pi-save" (click)="generarFactura()"></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+
+    </div>
+</div>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-toast position="top-right"></p-toast>
+
+<div  [ngClass]="{'loaderActivado': cargando == true , 'loaderDesactivado': cargando == false}">
+    <div [ngClass]="{'spinner': cargando == true}">
+        <p-progressSpinner strokeWidth = 5 ></p-progressSpinner>    
+    </div>
+    <div [ngClass]="{'mensajeSpinner': cargando == true}">
+        <label for=""> {{mensajeCarga}}</label>
+    </div>
+</div>

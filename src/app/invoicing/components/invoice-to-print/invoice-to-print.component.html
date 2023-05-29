@@ -1,0 +1,115 @@
+<div id="container">
+    <div class="cabecera">
+        <div style="float: left;width: 50%;">
+            
+            <div class="direccion">
+                <p>{{razonSocial}}<br/>
+                    Casa Matriz<br/> 
+                    <label>{{factura.direccion}}</label><br/>
+                    <label>Telefono:{{factura.telefonoemisor}}</label><br/>
+                    <label>{{lugarEmision}}</label>
+                </p>
+            </div>
+             
+        </div>
+        <div style="float: left;width: 50%;padding-top: 10px;">
+            <div class="nitempresa">
+                <table>
+                    <tr>
+                        <td ><span>NIT:</span></td>
+                        <td><p>{{factura.nitemisor}}</p></td>
+                    </tr>
+                    <tr>
+                        <td><span>Nº FACTURA:</span></td>
+                        <td><p>{{factura.numerofactura}}</p></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span>Nº AUTORIZACIÓN:</span>
+                        </td>
+                        <td><p>{{factura.cuf}}</p></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+    <div style="float: left;width: 100%;margin-bottom:10px;">
+        <h1 class="titiloFactura">FACTURA</h1>
+        <h2  *ngIf="factura.codigodocumentosector == 1" style="font-weight:bolder;color:red;">COMPRA VENTA</h2>
+        <h2 *ngIf="factura.codigodocumentosector == 22" style="font-weight:bolder;color:red;">TELECOMUNICACIONES</h2>
+    </div>
+    <div class="cliente">
+        <div style="float: left;width: 60%;">
+            <p><b>Fecha:</b>&nbsp;{{factura.fechaemision | date:'dd-MM-yyyy hh:mm a'}}</p>
+            <p><b>Telefono:</b>&nbsp;&nbsp;&nbsp;<b>{{factura.codigotelefonoclienteNavigation.telefono}}</b></p>
+            
+        </div>
+        <div style="float: left;width: 40%;"> 
+            <p><b>NIT/CI:</b>&nbsp;&nbsp;&nbsp;{{factura.numerodocumento}}</p>
+            <p><b>Nombre/Razon Social:</b>&nbsp;&nbsp;&nbsp;{{factura.nombrerazonsocial}}</p>
+        </div>
+    </div>
+    <div class="detalle">
+        <table border=1 cellspacing=0 cellpadding=2 bordercolor="#000000" style="border: 1px solid;">
+            <thead>
+                <tr >
+                    <th class="cabeceraDetalle">DESCRIPCI&Oacute;N</th>
+                    <th>CANTIDAD</th>
+                    <th>PRECIO UNITARIO</th>
+                    <th>DESCUENTO</th>
+                    <th>SUBTOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <ng-container *ngFor="let detalle of factura.facturadetalles"> 
+                    <tr >
+                        <td class="productoDetalle">{{detalle.descripcion}}</td>
+                        <td style="text-align:right; padding-right: 10px;">{{detalle.cantidad |number:'.2' }}</td>
+                        <td style="text-align:right; padding-right: 10px;">{{detalle.preciounitario |number:'.2' }}</td>
+                        <td style="text-align:right; padding-right: 10px;">{{detalle.montodescuento |number:'.2' }}</td>
+                        <td style="text-align:right; padding-right: 10px;">{{detalle.subtotal |number:'.2' }}</td>
+                    </tr>
+                </ng-container>
+
+                <tr style="background-color: #EBE9E9;" >
+                    <td class="totalLiteral" colspan="2" rowspan="4" style="font-weight: bold; padding-left: 20px; padding-right: 20px;" >Son:&nbsp;&nbsp;&nbsp;{{ convertirNumeroLiteral(factura.montototal) }} Bolivianos</td>
+                    <td colspan="2" style="text-align:right;background-color:darkgray; font-size: 14pt">SUBTOTAL Bs.</td>
+                    <td style="text-align:right; padding-right: 10px;">{{factura.montototal + factura.descuentoadicional |number:'.2' }}</td>
+                </tr>
+
+                <tr style="background-color: #EBE9E9;">
+                    <td colspan="2"style="text-align:right;background-color:darkgray; font-size: 14pt">DESCUENTO Bs.</td>
+                    <td style="text-align:right; padding-right: 10px;">{{factura.descuentoadicional |number:'.2' }}</td>
+                </tr>
+
+                <tr style="background-color: #EBE9E9;">
+                    <td colspan="2"style="text-align:right;background-color:darkgray;font-weight:bold; font-size: 14pt">TOTAL Bs.</td>
+                    <td style="text-align:right; padding-right: 10px;">{{factura.montototal |number:'.2' }}</td>
+                </tr>
+
+                <tr style="background-color: #EBE9E9;">
+                    <td colspan="2" style="text-align:right;background-color:darkgray;font-weight:bold; font-size: 14pt">IMPORTE BASE CREDITO FISCAL Bs.</td>
+                    <td style="text-align:right; padding-right: 10px;">{{factura.montototalsujetoiva |number:'.2' }}</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+    <table border=1 cellspacing=0 cellpadding=2 bordercolor="#000000" style="border: 1px solid;">
+        <tbody>
+            <tr style="background-color: #EBE9E9; ">
+            </tr>
+        </tbody>
+    </table>
+    <div class="pie" style="float: left; width: 100%;">
+        <div style="float: left; width: 84%;padding-top:40px; margin: 0 auto;">
+            <div><p>ESTA FACTURA CONTRIBUYE AL DESARROLLO DEL PAÍS, EL USO ILÍCITO SERÁ SANCIONADO PENALMENTE DE ACUERDO A LEY</p></div>
+            <div><p>{{factura.leyenda}}</p></div>
+            <div><p>“Este documento es la Representación Gráfica de un Documento Fiscal Digital emitido en una modalidad de facturación en línea”</p></div>
+        </div>
+        <div class="qr" style="float: left; width: 15%;">
+            <qrcode [qrdata]="enlaceQR" [width]="150" [errorCorrectionLevel]="'M'"></qrcode>
+        </div>
+    </div>
+</div>

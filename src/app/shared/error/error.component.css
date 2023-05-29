@@ -1,0 +1,13 @@
+.content {
+    height: 75vh;
+    display: flex;
+    justify-items: center;
+    justify-content: center;
+}
+
+.text {
+    font-size: 30px;
+    font-weight: bolder;    
+    color: rgb(255, 59, 59);
+    margin: auto auto;
+}

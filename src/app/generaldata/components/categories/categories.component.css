@@ -1,0 +1,20 @@
+.card{
+    width: 70%;
+    height: 500px;
+}
+
+.field{
+    margin: 10px 0;
+}
+
+.center{
+    text-align: center !important;
+}
+
+.codigo{
+    width: 10% !important;
+}
+
+.descripcion{
+    width: 80% !important;
+}
